@@ -52,7 +52,7 @@ pub fn update_car_suspension(
         wheel_vec.push(b_r_d);
         wheel_vec.push(b_l_d);
 
-        let max_suspension = 0.2;
+        let max_suspension = 0.1;
         force.force = Vec3::ZERO;
         force.torque = Vec3::ZERO;
         for i in 0..wheel_vec.len() {

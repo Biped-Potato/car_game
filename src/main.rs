@@ -19,7 +19,7 @@ fn main() {
         .insert_resource(ClearColor(Color::GRAY))
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        //.add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(WorldInspectorPlugin::default())
         .add_startup_system(setup_graphics)
         .add_startup_system(setup_physics)
@@ -46,7 +46,7 @@ fn setup_graphics(mut commands: Commands) {
             distance_behind: 10.,
         });
 }
-const CAR_SIZE: Vec3 = Vec3::new(0.5, 0.3, 0.7);
+const CAR_SIZE: Vec3 = Vec3::new(0.5, 0.3, 0.935);
 pub fn setup_physics(
     asset_server: Res<AssetServer>,
     mut loading: ResMut<AssetsLoading>,
@@ -84,7 +84,7 @@ pub fn setup_physics(
     for i in 0..4
     {
         let wheel_entity = commands.spawn(SceneBundle {
-            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::new(0.2,0.2,0.2)),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
             scene: asset_server.load("wheel.glb#Scene0"),
             ..default()
         }).id();
@@ -96,16 +96,16 @@ pub fn setup_physics(
 
     commands
         .spawn((
-            PbrBundle {
-                transform: Transform::from_xyz(0., 1., 0.).with_scale(car_size * 2.),
-                mesh: meshes.add(Mesh::from(shape::Cube { ..default() })),
-                
-                material: materials.add(Color::rgb(1., 1., 1.).into()),
+            SceneBundle {
+                transform: Transform::from_xyz(0., 1., 0.),
+                //mesh: meshes.add(Mesh::from(shape::Cube { ..default() })),
+                scene : asset_server.load("car.glb#Scene0"),
+                //material: materials.add(Color::rgb(1., 1., 1.).into()),
                 ..default()
             },
             //TransformBundle::from(Transform::from_xyz(0., 5., 0.)),
             RigidBody::Dynamic,
-            Collider::cuboid(0.5, 0.5, 0.5),
+            Collider::cuboid(car_size.x,car_size.y,car_size.z),
         ))
         .insert(car_suspension::CarPhysics {
             wheels_stationary_animation_speed : 10.,
