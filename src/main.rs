@@ -2,6 +2,9 @@ use std::sync::atomic::AtomicBool;
 
 use bevy::prelude::*;
 
+use bevy::render::render_resource::{AddressMode, SamplerDescriptor, FilterMode};
+use bevy::render::texture::ImageSampler;
+use bevy::window::{WindowResolution, WindowMode};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use car_camera::CameraFollow;
@@ -16,11 +19,29 @@ pub mod car_camera;
 pub mod car_controls;
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::GRAY))
-        .add_plugins(DefaultPlugins)
+        .insert_resource(ClearColor(Color::MIDNIGHT_BLUE))
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                position: WindowPosition::Centered(MonitorSelection::Primary),
+                resolution: WindowResolution::new(1920., 1080.),
+                mode: WindowMode::BorderlessFullscreen,
+                ..default()
+            }),
+            ..default()
+        }).set(ImagePlugin {
+                default_sampler: SamplerDescriptor 
+                {
+                mag_filter: FilterMode::Nearest,
+                min_filter: FilterMode::Nearest,
+                mipmap_filter: FilterMode::Nearest,
+                ..Default::default()
+                },..default()
+            }
+
+        ))
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(RapierDebugRenderPlugin::default())
-        .add_plugin(WorldInspectorPlugin::default())
+        //.add_plugin(RapierDebugRenderPlugin::default())
+        //.add_plugin(WorldInspectorPlugin::default())
         .add_startup_system(setup_graphics)
         .add_startup_system(setup_physics)
         .add_system(car_suspension::update_car_suspension)
@@ -174,6 +195,8 @@ fn check_assets_ready(
 pub struct MapStatus {
     pub loaded: bool,
 }
+
+
 fn setup_map(
     mut commands: Commands,
     mut map_status: ResMut<MapStatus>,
@@ -192,8 +215,8 @@ fn setup_map(
         println!("{}", "the mesh failed to load");
     }
     let texture_handle = asset_server.load("sand.png");
-    let normal_handle = asset_server.load("normal_map.png");
-    let _wall_mat = materials.add(StandardMaterial {
+    let normal_handle = asset_server.load("sand_normal.png");
+    let ground_mat = materials.add(StandardMaterial {
         normal_map_texture: Some(normal_handle.clone()),
         base_color: Color::WHITE,
         perceptual_roughness: 0.5,
@@ -210,7 +233,7 @@ fn setup_map(
             PbrBundle {
                 transform: Transform::from_xyz(0., 0., 0.).with_scale(Vec3::new(1., 1., 1.)),
                 mesh: meshes.add(map_mesh),
-                material: materials.add(Color::rgb(0.2, 0.5, 0.1).into()),
+                material: ground_mat,
                 //scene: asset_server.load("map.glb#Scene0"),
                 ..default()
             },
