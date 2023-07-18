@@ -17,6 +17,9 @@ pub mod vector_operations;
 pub mod car_suspension;
 pub mod car_camera;
 pub mod car_controls;
+pub mod ui_management;
+pub mod timer_text;
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::MIDNIGHT_BLUE))
@@ -49,6 +52,9 @@ fn main() {
         .add_system(car_controls::car_controls.after(car_suspension::update_car_suspension))
         .add_system(check_assets_ready)
         .insert_resource(MapStatus { loaded: false })
+        .add_startup_system(ui_management::initialize_dialogue)
+        .add_system(timer_text::text_update_system)
+        .insert_resource(timer_text::Completion{finished : false,started : false})
         .init_resource::<AssetsLoading>()
         .run();
 }
@@ -218,7 +224,7 @@ fn setup_map(
     let normal_handle = asset_server.load("sand_normal.png");
     let ground_mat = materials.add(StandardMaterial {
         normal_map_texture: Some(normal_handle.clone()),
-        base_color: Color::WHITE,
+        base_color: Color::rgb(1.2,1.2,1.),
         perceptual_roughness: 0.5,
         base_color_texture: Some(texture_handle.clone()),
         cull_mode: None,

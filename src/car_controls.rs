@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::{car_suspension::CarPhysics, car_camera::CameraFollow};
+use crate::{car_suspension::CarPhysics, car_camera::CameraFollow, timer_text::Completion};
 #[derive(Component)]
 pub struct CarController {
     pub rotated_last_frame: bool,
@@ -13,6 +13,7 @@ pub struct CarController {
     pub car_linear_damping : f32,
 }
 pub fn car_controls(
+    mut completion : ResMut<Completion>,
     mut commands: Commands,
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
@@ -74,12 +75,15 @@ pub fn car_controls(
         {
             damping.linear_damping = car_controller.car_linear_damping;
             if keys.pressed(KeyCode::W) {
+                completion.started = true;
                 force.force += car_transform.forward() * car_controller.speed * time.delta_seconds();
             }
             if keys.just_pressed(KeyCode::W) {
+                
                 force.torque += car_transform.left() * 300.;
             }
             if keys.pressed(KeyCode::S) {
+                completion.started = true;
                 force.force -= car_transform.forward() * car_controller.speed * time.delta_seconds();
             }
             if keys.just_pressed(KeyCode::S) {
@@ -140,6 +144,9 @@ pub fn car_controls(
             }
         }
         car_physics.car_transform_camera.translation = car_transform.translation;
-        
+        if Vec3::distance(car_transform.translation,Vec3::new(-850.,118.,364.) )<=100.
+        {
+            completion.finished = true;
+        }   
     }
 }
